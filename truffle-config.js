@@ -1,6 +1,6 @@
 const path = require("path");
 const HDWalletProvider = require("@truffle/hdwallet-provider"); 
-const Mnemonic = "test";
+const Mnemonic = "test2";
 const AccountIndex = 0;
 
 
