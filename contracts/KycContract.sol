@@ -18,4 +18,10 @@ contract KycContract is Ownable {
     function kycCompleted(address _addr) public view returns (bool) {
         return allowed[_addr];
     }
+
+    function getOwner () public view returns(address) {
+        return owner(); 
+    }
 }
+
+

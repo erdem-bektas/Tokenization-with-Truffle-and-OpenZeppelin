@@ -8,7 +8,12 @@ import KycContract from "./contracts/KycContract.json";
 import "./App.css";
 
 class App extends Component {
-  state = { loaded: false, kycAddress: "0x618..." };
+  state = {
+    loaded: false,
+    kycAddress: "0x618...",
+    tokenSaleAddress: null,
+    userTokens: 0,
+  };
 
   componentDidMount = async () => {
     try {
@@ -40,9 +45,12 @@ class App extends Component {
         this.KycSaleDeployedNetwork && this.KycSaleDeployedNetwork.address
       );
 
-      // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
-      this.setState({ loaded: true });
+      this.listenToTokenTransfer();
+      this.setState({
+        loaded: true,
+        tokenSaleAddress: this.tokensaledeployedNetwork.address,
+        updateUserTokens: this.updateUserTokens,
+      });
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -50,6 +58,28 @@ class App extends Component {
       );
       console.error(error);
     }
+  };
+
+  updateUserTokens = async () => {
+    let userTokens = await this.tokenInstance.methods
+      .balanceOf(this.accounts[0])
+      .call();
+    this.setState({ userTokens });
+  };
+
+  listenToTokenTransfer = () => {
+    this.tokenInstance.events
+      .Transfer({ to: this.accounts[0] })
+      .on("data", this.updateUserTokens);
+  };
+
+  handleBuyTokens = async () => {
+    await this.tokenSaleInstance.methods
+      .buyTokens(this.accounts[0])
+      .send({
+        from: this.accounts[0],
+        value: this.web3.utils.toWei("1", "wei"),
+      });
   };
 
   handleInputChange = (e) => {
@@ -87,6 +117,12 @@ class App extends Component {
         ></input>
         <button type="button" onClick={this.handleKycWhitelisting}>
           Add to Whitelist
+        </button>
+        <h2>Buy Tokens</h2>
+        <p>Send Wei to this address for Token: {this.state.tokenSaleAddress}</p>
+        <p> You Currently Have: {this.state.userTokens} AAA Tokens</p>
+        <button type="button" onClick={this.handleBuyTokens}>
+          Buy More Tokens
         </button>
       </div>
     );
